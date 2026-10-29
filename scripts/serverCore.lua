@@ -170,7 +170,8 @@ function OnServerInit()
 
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnServerInit\"")
 
-    local expectedVersionPrefix = "0.8.1"
+    -- TES3MP-NG follows OpenMW's version numbers (0.51.x is based on OpenMW 0.51)
+    local expectedVersionPrefix = "0.51"
     local serverVersion = tes3mp.GetServerVersion()
 
     if string.sub(serverVersion, 1, string.len(expectedVersionPrefix)) ~= expectedVersionPrefix then
