@@ -703,3 +703,21 @@ end
 function OnObjectLoopTimeExpiration(loopIndex)
     eventHandler.OnObjectLoopTimeExpiration(loopIndex)
 end
+
+-- OpenMW Lua synchronization (TES3MP 0.51, see docs/tes3mp/lua-multiplayer.md in the engine repository)
+
+-- Called for every OpenMW Lua global event that a client sends to the Lua world authority, with the event's data as
+-- JSON. Validators can drop the event by returning customEventHooks.makeEventStatus(false, false).
+function OnLuaGlobalEvent(pid, eventName, jsonData)
+    local eventStatus = customEventHooks.triggerValidators("OnLuaGlobalEvent", {pid, eventName, jsonData})
+    if eventStatus.validDefaultHandler == false then
+        tes3mp.DropLuaEvent()
+    end
+    customEventHooks.triggerHandlers("OnLuaGlobalEvent", eventStatus, {pid, eventName, jsonData})
+end
+
+-- Called when a player becomes the Lua world authority, the client that runs "authority" mode global scripts
+function OnLuaAuthorityChange(pid)
+    tes3mp.LogMessage(enumerations.log.INFO, "Lua world authority is now " .. logicHandler.GetChatName(pid))
+    customEventHooks.triggerHandlers("OnLuaAuthorityChange", customEventHooks.makeEventStatus(true, true), {pid})
+end
