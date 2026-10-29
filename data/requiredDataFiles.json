@@ -5,6 +5,9 @@
 // because the German and French editions have hardcoded translations, whereas
 // the Russian edition has localization files that make it compatible with the
 // English edition
+//
+// OpenMW Lua mods are listed by their .omwscripts file. Its checksum covers the scripts the mod runs, as
+// logged by clients when they connect; an empty list accepts any version of the mod
 
 [
     {"Morrowind.esm": ["0x7B6AF5B9", "0x34282D67"]},
