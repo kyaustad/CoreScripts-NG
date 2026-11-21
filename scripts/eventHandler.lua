@@ -1490,6 +1490,14 @@ eventHandler.OnObjectTrap = function(pid, cellDescription)
     eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectTrap")
 end
 
+eventHandler.OnObjectMove = function(pid, cellDescription)
+    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectMove")
+end
+
+eventHandler.OnObjectRotate = function(pid, cellDescription)
+    eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectRotate")
+end
+
 eventHandler.OnObjectScale = function(pid, cellDescription)
     eventHandler.OnGenericObjectEvent(pid, cellDescription, "ObjectScale")
 end

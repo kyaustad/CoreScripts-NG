@@ -595,6 +595,47 @@ function BaseCell:SaveObjectsScaled(objects)
     end
 end
 
+-- TES3MP-NG: objects moved or rotated within the cell. Placed objects keep their new location, so players who load
+-- the cell later get them where they are; objects from data files keep it separately
+function BaseCell:SaveObjectsMoved(objects)
+
+    for uniqueIndex, object in pairs(objects) do
+
+        self:InitializeObjectData(uniqueIndex, object.refId)
+        local data = self.data.objectData[uniqueIndex]
+
+        if data.location ~= nil then
+            data.location.posX = object.position.posX
+            data.location.posY = object.position.posY
+            data.location.posZ = object.position.posZ
+        else
+            data.position = object.position
+            tableHelper.insertValueIfMissing(self.data.packets.move, uniqueIndex)
+        end
+
+        tes3mp.LogAppend(enumerations.log.INFO, "- " .. uniqueIndex .. ", refId: " .. object.refId ..
+            ", position: " .. object.position.posX .. ", " .. object.position.posY .. ", " .. object.position.posZ)
+    end
+end
+
+function BaseCell:SaveObjectsRotated(objects)
+
+    for uniqueIndex, object in pairs(objects) do
+
+        self:InitializeObjectData(uniqueIndex, object.refId)
+        local data = self.data.objectData[uniqueIndex]
+
+        if data.location ~= nil then
+            data.location.rotX = object.rotation.rotX
+            data.location.rotY = object.rotation.rotY
+            data.location.rotZ = object.rotation.rotZ
+        else
+            data.rotation = object.rotation
+            tableHelper.insertValueIfMissing(self.data.packets.rotate, uniqueIndex)
+        end
+    end
+end
+
 function BaseCell:SaveObjectStates(objects)
 
     for uniqueIndex, object in pairs(objects) do
@@ -822,6 +863,10 @@ function BaseCell:SaveObjectsByPacketType(packetType, objects)
         self:SaveObjectTrapsTriggered(objects)
     elseif packetType == "ObjectScale" then
         self:SaveObjectsScaled(objects)
+    elseif packetType == "ObjectMove" then
+        self:SaveObjectsMoved(objects)
+    elseif packetType == "ObjectRotate" then
+        self:SaveObjectsRotated(objects)
     elseif packetType == "ObjectState" then
         self:SaveObjectStates(objects)
     elseif packetType == "DoorState" then
@@ -1435,6 +1480,50 @@ function BaseCell:LoadObjectsScaled(pid, objectData, uniqueIndexArray, forEveryo
     end
 end
 
+function BaseCell:LoadObjectsMoved(pid, objectData, uniqueIndexArray, forEveryone)
+
+    local objectCount = 0
+
+    tes3mp.ClearObjectList()
+    tes3mp.SetObjectListPid(pid)
+    tes3mp.SetObjectListCell(self.description)
+
+    for arrayIndex, uniqueIndex in pairs(uniqueIndexArray) do
+
+        local data = objectData[uniqueIndex]
+        if data ~= nil and data.refId ~= nil and (data.position ~= nil or data.location ~= nil) then
+            packetBuilder.AddObjectMove(uniqueIndex, data)
+            objectCount = objectCount + 1
+        end
+    end
+
+    if objectCount > 0 then
+        tes3mp.SendObjectMove(forEveryone)
+    end
+end
+
+function BaseCell:LoadObjectsRotated(pid, objectData, uniqueIndexArray, forEveryone)
+
+    local objectCount = 0
+
+    tes3mp.ClearObjectList()
+    tes3mp.SetObjectListPid(pid)
+    tes3mp.SetObjectListCell(self.description)
+
+    for arrayIndex, uniqueIndex in pairs(uniqueIndexArray) do
+
+        local data = objectData[uniqueIndex]
+        if data ~= nil and data.refId ~= nil and (data.rotation ~= nil or data.location ~= nil) then
+            packetBuilder.AddObjectRotate(uniqueIndex, data)
+            objectCount = objectCount + 1
+        end
+    end
+
+    if objectCount > 0 then
+        tes3mp.SendObjectRotate(forEveryone)
+    end
+end
+
 function BaseCell:LoadObjectStates(pid, objectData, uniqueIndexArray, forEveryone)
 
     local objectCount = 0
@@ -1572,6 +1661,10 @@ function BaseCell:LoadObjectsByPacketType(packetType, pid, objectData, uniqueInd
         self:LoadObjectTrapsTriggered(pid, objectData, uniqueIndexArray, forEveryone)
     elseif packetType == "ObjectScale" then
         self:LoadObjectsScaled(pid, objectData, uniqueIndexArray, forEveryone)
+    elseif packetType == "ObjectMove" then
+        self:LoadObjectsMoved(pid, objectData, uniqueIndexArray, forEveryone)
+    elseif packetType == "ObjectRotate" then
+        self:LoadObjectsRotated(pid, objectData, uniqueIndexArray, forEveryone)
     elseif packetType == "ObjectState" then
         self:LoadObjectStates(pid, objectData, uniqueIndexArray, forEveryone)
     elseif packetType == "DoorState" then
@@ -2109,6 +2202,8 @@ function BaseCell:LoadInitialCellData(pid)
     self:LoadObjectsLocked(pid, objectData, packets.lock)
     self:LoadObjectTrapsTriggered(pid, objectData, packets.trap)
     self:LoadObjectsScaled(pid, objectData, packets.scale)
+    self:LoadObjectsMoved(pid, objectData, packets.move)
+    self:LoadObjectsRotated(pid, objectData, packets.rotate)
     self:LoadObjectsMiscellaneous(pid, objectData, packets.miscellaneous)
     self:LoadObjectStates(pid, objectData, packets.state)
     self:LoadDoorStates(pid, objectData, packets.doorState)

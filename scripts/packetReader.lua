@@ -506,6 +506,16 @@ packetReader.GetObjectPacketTables = function(packetType)
                 object.lastGoldRestockDay = tes3mp.GetObjectLastGoldRestockDay(packetIndex)
             elseif packetType == "ObjectScale" then
                 object.scale = tes3mp.GetObjectScale(packetIndex)
+            elseif packetType == "ObjectMove" then
+                object.position = {
+                    posX = tes3mp.GetObjectPosX(packetIndex), posY = tes3mp.GetObjectPosY(packetIndex),
+                    posZ = tes3mp.GetObjectPosZ(packetIndex)
+                }
+            elseif packetType == "ObjectRotate" then
+                object.rotation = {
+                    rotX = tes3mp.GetObjectRotX(packetIndex), rotY = tes3mp.GetObjectRotY(packetIndex),
+                    rotZ = tes3mp.GetObjectRotZ(packetIndex)
+                }
             elseif packetType == "ObjectState" then
                 object.state = tes3mp.GetObjectState(packetIndex)
             elseif packetType == "DoorState" then

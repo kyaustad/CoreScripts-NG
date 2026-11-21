@@ -611,6 +611,19 @@ function OnObjectTrap(pid, cellDescription)
     eventHandler.OnObjectTrap(pid, cellDescription)
 end
 
+-- TES3MP-NG: objects moved or rotated by players' Lua mods
+function OnObjectMove(pid, cellDescription)
+    tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnObjectMove\" for " .. logicHandler.GetChatName(pid) ..
+        " and cell " .. cellDescription)
+    eventHandler.OnObjectMove(pid, cellDescription)
+end
+
+function OnObjectRotate(pid, cellDescription)
+    tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnObjectRotate\" for " .. logicHandler.GetChatName(pid) ..
+        " and cell " .. cellDescription)
+    eventHandler.OnObjectRotate(pid, cellDescription)
+end
+
 function OnObjectScale(pid, cellDescription)
     tes3mp.LogMessage(enumerations.log.INFO, "Called \"OnObjectScale\" for " .. logicHandler.GetChatName(pid) ..
         " and cell " .. cellDescription)

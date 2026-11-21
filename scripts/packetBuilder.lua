@@ -144,6 +144,29 @@ packetBuilder.AddObjectTrap = function(uniqueIndex, objectData)
     tes3mp.AddObject()
 end
 
+-- TES3MP-NG: an object's position, from a move or from its placement's location
+packetBuilder.AddObjectMove = function(uniqueIndex, objectData)
+
+    local position = objectData.position or objectData.location
+    local splitIndex = uniqueIndex:split("-")
+    tes3mp.SetObjectRefNum(splitIndex[1])
+    tes3mp.SetObjectMpNum(splitIndex[2])
+    if objectData.refId ~= nil then tes3mp.SetObjectRefId(objectData.refId) end
+    tes3mp.SetObjectPosition(position.posX, position.posY, position.posZ)
+    tes3mp.AddObject()
+end
+
+packetBuilder.AddObjectRotate = function(uniqueIndex, objectData)
+
+    local rotation = objectData.rotation or objectData.location
+    local splitIndex = uniqueIndex:split("-")
+    tes3mp.SetObjectRefNum(splitIndex[1])
+    tes3mp.SetObjectMpNum(splitIndex[2])
+    if objectData.refId ~= nil then tes3mp.SetObjectRefId(objectData.refId) end
+    tes3mp.SetObjectRotation(rotation.rotX, rotation.rotY, rotation.rotZ)
+    tes3mp.AddObject()
+end
+
 packetBuilder.AddObjectScale = function(uniqueIndex, objectData)
 
     local splitIndex = uniqueIndex:split("-")
