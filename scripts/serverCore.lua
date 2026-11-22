@@ -728,6 +728,30 @@ function OnLuaGlobalEvent(pid, eventName, jsonData)
         tes3mp.DropLuaEvent()
     end
     customEventHooks.triggerHandlers("OnLuaGlobalEvent", eventStatus, {pid, eventName, jsonData})
+
+    -- The server owns the game time: Lua scripts' world.setGameTimeScale and world.advanceTime change it for everyone
+    if eventStatus.validDefaultHandler ~= false and (eventName == "MP_SetGameTimeScale"
+        or eventName == "MP_AdvanceTime") then
+        local data = require("dkjson").decode(jsonData)
+        local time = WorldInstance.data.time
+        if eventName == "MP_SetGameTimeScale" and data and tonumber(data.scale) and tonumber(data.scale) >= 0 then
+            time.dayTimeScale = tonumber(data.scale)
+            time.nightTimeScale = tonumber(data.scale)
+            WorldInstance:UpdateFrametimeMultiplier()
+        elseif eventName == "MP_AdvanceTime" and data and tonumber(data.hours) and tonumber(data.hours) > 0 then
+            time.hour = time.hour + tonumber(data.hours)
+            while time.hour >= 24 do
+                time.hour = time.hour - 24
+                WorldInstance:IncrementDay()
+            end
+        else
+            return
+        end
+        tes3mp.LogMessage(enumerations.log.INFO, logicHandler.GetChatName(pid) .. "'s Lua scripts changed the game "
+            .. "time: hour " .. time.hour .. ", time scale " .. WorldInstance:GetCurrentTimeScale())
+        WorldInstance:QuicksaveToDrive()
+        WorldInstance:LoadTime(pid, true)
+    end
 end
 
 -- Called when a player becomes the Lua world authority, the client that runs "authority" mode global scripts
